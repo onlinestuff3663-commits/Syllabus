@@ -197,6 +197,7 @@
     <div class="header-sub">English · LR · Legal · Quants · GK — Parallel Track</div>
     <div class="phase-badge" id="phase-badge">Phase 1: Foundation Classes</div>
     <div class="header-dayinfo" id="header-dayinfo">Day 1 of 105 · Week 1</div>
+    <div style="min-height:14px;margin-bottom:4px;"><span id="saving-indicator" class="saving-dot"></span></div>
     <div class="progress-bar-track"><div class="progress-bar-fill" id="overall-bar" style="width:0%"></div></div>
     <div class="progress-labels"><span>Wk 1–5</span><span>Wk 6–10</span><span>Wk 11–15</span></div>
   </div>
@@ -789,11 +790,24 @@ let syllabusSubject = null; // null = subject list, string = drill-down subject
 let syllabusSearch = ""; // search query inside drill-down
 
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
-function loadChecked() {
-  try { const v = localStorage.getItem("examPlanHTML_v1"); if(v) checked = JSON.parse(v); } catch{}
+function setSavingIndicator(msg) {
+  const el = document.getElementById("saving-indicator");
+  if (el) el.textContent = msg;
 }
+
+function loadChecked() {
+  // No-op: data loaded by Firebase module script, applied in _plannerBoot()
+}
+
 function saveChecked() {
-  try { localStorage.setItem("examPlanHTML_v1", JSON.stringify(checked)); } catch{}
+  const userId = window._firestoreUserId;
+  if (!userId || !window._saveToFirestore) return;
+  setSavingIndicator("⏳ Saving…");
+  window._saveToFirestore(checked, userId)
+    .then(ok => {
+      setSavingIndicator(ok ? "✓ Saved" : "⚠ Save failed");
+      setTimeout(() => setSavingIndicator(""), 1500);
+    });
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -961,12 +975,83 @@ const SUBJECT_ICONS = {
   "GK & Current Affairs": "🌍",
 };
 
+function renderSyllTaskList() {
+  // Only re-renders the task list portion — leaves the search input untouched
+  const listEl = document.getElementById("syll-task-list");
+  if (!listEl || !syllabusSubject) return;
+
+  const sub = syllabusSubject;
+  const meta = SUBJECT_META[sub];
+  const seq = SYLLABUS_SEQ[sub] || [];
+  const classes = seq.filter(t => t.type === "class");
+  const books = {};
+  seq.filter(t => t.type !== "class").forEach(t => {
+    const b = t.book || 0;
+    if (!books[b]) books[b] = [];
+    books[b].push(t);
+  });
+
+  const q = syllabusSearch.trim().toLowerCase();
+
+  function matchQ(label) { return !q || label.toLowerCase().includes(q); }
+  let html = "";
+  let totalVisible = 0;
+
+  const filteredClasses = classes.filter(t => matchQ(t.label));
+  if (filteredClasses.length) {
+    html += `<div class="syll-section">
+      <div class="syll-section-title" style="color:${meta.color}">🎓 Classes to Cover (${filteredClasses.length}${q?" matching":""})</div>`;
+    filteredClasses.forEach(task => {
+      totalVisible++;
+      const idx = SYLL_TASK_LIST.indexOf(task);
+      const done = isSyllTaskChecked(task);
+      const keys = getSyllTaskCheckedKeys(task);
+      const dayTag = keys.length ? `Day ${keys[0].split("_")[0]}` : "Unscheduled";
+      html += syllTaskRowHTML(task, idx, done, meta, dayTag, q);
+    });
+    html += `</div>`;
+  }
+
+  Object.keys(books).sort((a,b)=>+a-+b).forEach(bookNum => {
+    const items = books[bookNum];
+    const filteredItems = items.filter(t => matchQ(t.label));
+    if (!filteredItems.length) return;
+    totalVisible += filteredItems.length;
+    html += `<div class="syll-section">
+      <div class="syll-section-title" style="color:${meta.color}">📖 Book ${bookNum} (${filteredItems.length}${q?" matching":""})</div>`;
+    filteredItems.forEach(task => {
+      const idx = SYLL_TASK_LIST.indexOf(task);
+      const done = isSyllTaskChecked(task);
+      const keys = getSyllTaskCheckedKeys(task);
+      const dayTag = keys.length ? `Day ${keys.map(k=>k.split("_")[0]).join(", ")}` : "Unscheduled";
+      html += syllTaskRowHTML(task, idx, done, meta, dayTag, q);
+    });
+    html += `</div>`;
+  });
+
+  if (q && totalVisible === 0) {
+    html += `<div class="syll-no-results">No topics match "<strong>${q.replace(/</g,"&lt;")}</strong>"</div>`;
+  }
+
+  listEl.innerHTML = html;
+
+  // Update the progress line and clear button without touching the input
+  const pctEl = document.getElementById("syll-subject-pct");
+  const prog = getSyllSubjectProgress(sub);
+  const pct = prog.total ? Math.round((prog.done/prog.total)*100) : 0;
+  if (pctEl) pctEl.textContent = `${prog.done}/${prog.total} done · ${pct}%`;
+  const fillEl = document.getElementById("syll-progress-fill");
+  if (fillEl) fillEl.style.width = pct + "%";
+  const clearBtn = document.getElementById("syll-search-clear-btn");
+  if (clearBtn) clearBtn.style.display = syllabusSearch ? "block" : "none";
+}
+
 function renderSyllabus() {
   const container = document.getElementById("syllabus-content");
   if (!container) return;
 
   if (!syllabusSubject) {
-    // Subject list view
+    // Subject list view — safe to replace fully (no input here)
     let html = `<div class="syllabus-panel">
       <div class="syllabus-title">Complete Syllabus</div>
       <div class="syllabus-sub">Tap a subject to view & track its full syllabus</div>`;
@@ -989,7 +1074,6 @@ function renderSyllabus() {
       </div>`;
     });
 
-    // GK note
     html += `<div class="subject-card">
       <div class="subject-card-header" style="cursor:default">
         <div class="subject-card-icon" style="background:${SUBJECT_META["GK & Current Affairs"].bg}">🌍</div>
@@ -1005,7 +1089,8 @@ function renderSyllabus() {
     return;
   }
 
-  // Drill-down view for a subject
+  // Drill-down view — build the shell with a stable search input
+  // The task list lives in #syll-task-list and is updated separately
   const sub = syllabusSubject;
   const meta = SUBJECT_META[sub];
   const seq = SYLLABUS_SEQ[sub] || [];
@@ -1013,79 +1098,40 @@ function renderSyllabus() {
   const pct = prog.total ? Math.round((prog.done/prog.total)*100) : 0;
   const icon = SUBJECT_ICONS[sub] || "📚";
 
-  // Separate classes and books
-  const classes = seq.filter(t => t.type === "class");
-  const books = {};
-  seq.filter(t => t.type !== "class").forEach(t => {
-    const b = t.book || 0;
-    if (!books[b]) books[b] = [];
-    books[b].push(t);
-  });
-
-  const q = syllabusSearch.trim().toLowerCase();
-
-  let html = `<div style="padding-bottom:48px;">
-    <button class="syll-back" onclick="syllabusSubject=null;syllabusSearch='';render();">
-      <span class="syll-back-arrow">←</span>
-      <span class="syll-back-label">All Subjects</span>
-    </button>
-    <div class="syll-subject-header">
-      <div class="syll-subject-name" style="color:${meta.color}">${icon} ${sub}</div>
-      <div class="syll-subject-pct">${prog.done}/${prog.total} done · ${pct}%</div>
-      <div class="syll-progress-bar"><div class="syll-progress-fill" style="background:${meta.color};width:${pct}%"></div></div>
-    </div>
-    <div class="syll-search-wrap">
-      <span class="syll-search-icon">🔍</span>
-      <input class="syll-search-input" type="text" placeholder="Search topics in ${sub}…"
-        value="${syllabusSearch.replace(/"/g,'&quot;')}"
-        oninput="syllabusSearch=this.value;renderSyllabus();"
-        autocomplete="off"/>
-      ${syllabusSearch ? `<button class="syll-search-clear" onclick="syllabusSearch='';renderSyllabus();">✕</button>` : ''}
+  // Only rebuild the shell if we're switching subjects (or first render)
+  const existingShell = document.getElementById("syll-drill-shell");
+  if (!existingShell || existingShell.dataset.sub !== sub) {
+    container.innerHTML = `<div id="syll-drill-shell" data-sub="${sub}" style="padding-bottom:48px;">
+      <button class="syll-back" onclick="syllabusSubject=null;syllabusSearch='';render();">
+        <span class="syll-back-arrow">←</span>
+        <span class="syll-back-label">All Subjects</span>
+      </button>
+      <div class="syll-subject-header">
+        <div class="syll-subject-name" style="color:${meta.color}">${icon} ${sub}</div>
+        <div id="syll-subject-pct" class="syll-subject-pct">${prog.done}/${prog.total} done · ${pct}%</div>
+        <div class="syll-progress-bar"><div id="syll-progress-fill" class="syll-progress-fill" style="background:${meta.color};width:${pct}%"></div></div>
+      </div>
+      <div class="syll-search-wrap">
+        <span class="syll-search-icon">🔍</span>
+        <input class="syll-search-input" id="syll-search-input" type="text"
+          placeholder="Search topics in ${sub}…"
+          autocomplete="off"
+          value="${syllabusSearch.replace(/"/g,'&quot;')}"/>
+        <button id="syll-search-clear-btn" class="syll-search-clear"
+          style="display:${syllabusSearch ? 'block' : 'none'}"
+          onclick="syllabusSearch='';document.getElementById('syll-search-input').value='';renderSyllTaskList();">✕</button>
+      </div>
+      <div id="syll-task-list"></div>
     </div>`;
 
-  function matchQ(label) { return !q || label.toLowerCase().includes(q); }
-  let totalVisible = 0;
-
-  // Classes section
-  const filteredClasses = classes.filter(t => matchQ(t.label));
-  if (filteredClasses.length) {
-    html += `<div class="syll-section">
-      <div class="syll-section-title" style="color:${meta.color}">🎓 Classes to Cover (${filteredClasses.length}${q?" matching":""})</div>`;
-    filteredClasses.forEach(task => {
-      totalVisible++;
-      const idx = SYLL_TASK_LIST.indexOf(task);
-      const done = isSyllTaskChecked(task);
-      const keys = getSyllTaskCheckedKeys(task);
-      const dayTag = keys.length ? `Day ${keys[0].split("_")[0]}` : "Unscheduled";
-      html += syllTaskRowHTML(task, idx, done, meta, dayTag, q);
+    // Attach oninput here so it never gets lost on re-render
+    document.getElementById("syll-search-input").addEventListener("input", function() {
+      syllabusSearch = this.value;
+      renderSyllTaskList();
     });
-    html += `</div>`;
   }
 
-  // Books
-  Object.keys(books).sort((a,b)=>+a-+b).forEach(bookNum => {
-    const items = books[bookNum];
-    const filteredItems = items.filter(t => matchQ(t.label));
-    if (!filteredItems.length) return;
-    totalVisible += filteredItems.length;
-    html += `<div class="syll-section">
-      <div class="syll-section-title" style="color:${meta.color}">📖 Book ${bookNum} (${filteredItems.length}${q?" matching":""})</div>`;
-    filteredItems.forEach(task => {
-      const idx = SYLL_TASK_LIST.indexOf(task);
-      const done = isSyllTaskChecked(task);
-      const keys = getSyllTaskCheckedKeys(task);
-      const dayTag = keys.length ? `Day ${keys.map(k=>k.split("_")[0]).join(", ")}` : "Unscheduled";
-      html += syllTaskRowHTML(task, idx, done, meta, dayTag, q);
-    });
-    html += `</div>`;
-  });
-
-  if (q && totalVisible === 0) {
-    html += `<div class="syll-no-results">No topics match "<strong>${q.replace(/</g,"&lt;")}</strong>"</div>`;
-  }
-
-  html += `</div>`;
-  container.innerHTML = html;
+  renderSyllTaskList();
 }
 
 function syllTaskRowHTML(task, idx, done, meta, dayTag, q) {
@@ -1234,8 +1280,66 @@ function goToDay(dayNum) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-loadChecked();
-render();
+// Called either immediately (if Firebase module already ran) or by the module script
+function _plannerBoot() {
+  if (window._loadedChecked) {
+    checked = window._loadedChecked;
+  }
+  render();
+}
+window._plannerBoot = _plannerBoot;
+
+// If Firebase module already finished before this script parsed, boot now
+if (window._firebaseReady) {
+  _plannerBoot();
+}
+// Otherwise the module script calls window._plannerBoot() when it's done
+</script>
+<!-- Firebase Modular SDK v11 via ESM — type="module" ensures sequential loading -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCdhhq3aquaV9lXOWlte2uL__W5Ybt9frU",
+    authDomain: "syllabus-612.firebaseapp.com",
+    projectId: "syllabus-612",
+    storageBucket: "syllabus-612.firebasestorage.app",
+    messagingSenderId: "215221682907",
+    appId: "1:215221682907:web:4ea7cae9406f0a2ead42fe"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const _db = getFirestore(app);
+  const _auth = getAuth(app);
+
+  // Wire up the save function used by the main script
+  window._saveToFirestore = async function(checkedData, userId) {
+    try {
+      await setDoc(doc(_db, "planner", "main"), { userId, checked: checkedData }, { merge: true });
+      return true;
+    } catch(e) { console.error("Firestore save:", e); return false; }
+  };
+
+  // Sign in and load, then hand off to main script
+  try {
+    const cred = await signInAnonymously(_auth);
+    const userId = cred.user.uid;
+    window._firestoreUserId = userId;
+
+    const snap = await getDoc(doc(_db, "planner", "main"));
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data && data.checked) window._loadedChecked = data.checked;
+    }
+  } catch(e) {
+    console.warn("Firebase init error, running offline:", e);
+  }
+
+  // Now boot the planner
+  window._firebaseReady = true;
+  if (window._plannerBoot) window._plannerBoot();
 </script>
 </body>
 </html>
