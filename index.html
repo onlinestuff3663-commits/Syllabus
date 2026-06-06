@@ -1281,6 +1281,10 @@ function goToDay(dayNum) {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Called either immediately (if Firebase module already ran) or by the module script
+// Render immediately on page load with empty checked state
+// Firebase will call _plannerBoot() when ready, which re-renders with saved data
+render();
+
 function _plannerBoot() {
   if (window._loadedChecked) {
     checked = window._loadedChecked;
@@ -1293,7 +1297,7 @@ window._plannerBoot = _plannerBoot;
 if (window._firebaseReady) {
   _plannerBoot();
 }
-// Otherwise the module script calls window._plannerBoot() when it's done
+// Otherwise the module script calls window._plannerBoot() when ready
 </script>
 <!-- Firebase Modular SDK v11 via ESM — type="module" ensures sequential loading -->
 <script type="module">
