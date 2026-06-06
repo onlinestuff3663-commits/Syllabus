@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>105-Day Master Plan</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Georgia,"Times New Roman",serif;background:#fff;max-width:480px;margin:0 auto;min-height:100vh;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* Header */
+  .header{background:#4a2d7a;padding:28px 24px 22px;color:#fff;}
+  .header-eyebrow{font-size:11px;letter-spacing:3px;color:#c9b8f0;font-family:monospace;text-transform:uppercase;margin-bottom:6px;}
+  .header-title{font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-1px;margin-bottom:4px;}
+  .header-sub{font-size:13px;color:#c9b8f0;margin-bottom:14px;}
+  .phase-badge{display:inline-block;background:#d4c1f5;color:#2a0f5a;padding:7px 18px;border-radius:99px;font-size:13px;font-weight:700;margin-bottom:12px;}
+  .header-dayinfo{font-size:13px;color:#c9b8f0;margin-bottom:12px;}
+  .saving-dot{font-size:11px;color:#d4c1f5;margin-left:8px;}
+  .progress-bar-track{background:#321a5e;border-radius:99px;height:6px;margin-bottom:8px;}
+  .progress-bar-fill{background:#c9b8f0;height:100%;border-radius:99px;transition:width 0.4s;}
+  .progress-labels{display:flex;justify-content:space-between;font-size:11px;color:#9d84d4;}
+
+  /* Tabs */
+  .tabs{display:flex;border-bottom:1px solid #eee;background:#fff;position:sticky;top:0;z-index:10;}
+  .tab-btn{flex:1;padding:13px 4px 11px;border:none;background:none;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:2.5px solid transparent;color:#999;font-weight:400;}
+  .tab-btn.active{color:#4a2d7a;font-weight:700;border-bottom-color:#4a2d7a;}
+  .tab-icon{font-size:15px;}
+
+  /* Tab panels */
+  .panel{display:none;padding-bottom:48px;}
+  .panel.active{display:block;}
+
+  /* Day nav */
+  .day-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px;}
+  .nav-btn{padding:8px 16px;border-radius:10px;border:none;background:#f0f2f8;font-size:14px;font-weight:600;}
+  .day-center{text-align:center;}
+  .day-num{font-size:21px;font-weight:800;color:#4a2d7a;}
+  .day-sub{font-size:12px;color:#999;}
+
+  /* Jump row */
+  .jump-row{overflow-x:auto;padding:4px 16px 10px;display:flex;gap:8px;scrollbar-width:none;}
+  .jump-row::-webkit-scrollbar{display:none;}
+  .jump-btn{flex:0 0 auto;padding:6px 12px;border-radius:8px;border:none;background:#f0f2f8;color:#555;font-size:12px;font-weight:600;}
+  .jump-btn.active{background:#4a2d7a;color:#fff;}
+
+  /* Free day */
+  .free-day{margin:48px 24px;text-align:center;}
+  .free-day .emoji{font-size:52px;margin-bottom:12px;}
+  .free-day h2{color:#4a2d7a;margin-bottom:6px;}
+  .free-day p{color:#888;font-size:14px;}
+
+  /* Day progress */
+  .day-progress{margin:4px 16px 16px;padding:12px 16px;background:#f7f8fc;border-radius:12px;}
+  .day-progress-row{display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:6px;}
+  .day-progress-count{font-weight:700;color:#4a2d7a;}
+  .day-progress-track{background:#e0e3ef;border-radius:99px;height:8px;}
+  .day-progress-fill{height:100%;border-radius:99px;transition:width 0.3s;background:#4F7EFF;}
+  .day-progress-fill.complete{background:#27ae60;}
+
+  /* Sat note */
+  .sat-note{font-size:11px;color:#7b5ea7;font-weight:700;letter-spacing:1px;margin:0 20px 14px;text-transform:uppercase;}
+
+  /* Sections */
+  .section{margin:0 14px 22px;}
+  .section-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .section-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:1px;font-family:monospace;}
+  .section-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+
+  /* Task row */
+  .task-row{width:100%;text-align:left;padding:11px 13px;margin-bottom:7px;border:1.5px solid #eee;border-radius:12px;background:#fff;display:flex;align-items:flex-start;gap:11px;transition:all 0.15s;}
+  .task-row.checked{border-color:var(--accent-light);background:var(--accent-bg);}
+  .task-checkbox{width:21px;height:21px;border-radius:6px;border:2px solid #ccc;background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all 0.15s;font-size:12px;color:#fff;}
+  .task-checkbox.checked{border-color:var(--accent);background:var(--accent);}
+  .task-label{font-size:13px;font-weight:400;color:#222;line-height:1.45;}
+  .task-label.class-label{font-weight:600;}
+  .task-label.checked-label{color:#bbb;text-decoration:line-through;}
+  .task-meta{font-size:10px;margin-top:3px;font-weight:700;font-family:monospace;letter-spacing:0.5px;}
+
+  /* Week view */
+  .week-panel{padding:16px;}
+  .week-title{font-size:18px;font-weight:700;color:#4a2d7a;margin-bottom:16px;}
+  .week-day-btn{width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;border:1.5px solid #eee;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:space-between;}
+  .week-day-btn.active-day{border-color:#4a2d7a;}
+  .week-day-btn.free-bg{background:#f9fff9;}
+  .week-day-name{font-size:14px;font-weight:700;color:#4a2d7a;}
+  .week-day-date{font-size:11px;color:#888;margin-left:8px;}
+  .week-day-badge{font-size:11px;margin-left:8px;}
+  .week-day-count{font-size:12px;font-weight:600;color:#555;text-align:right;}
+  .week-day-count.complete{color:#27ae60;}
+  .mini-bar-track{background:#eee;border-radius:99px;height:4px;width:56px;margin-top:4px;}
+  .mini-bar-fill{height:100%;border-radius:99px;background:#4F7EFF;}
+  .mini-bar-fill.complete{background:#27ae60;}
+  .week-nav{display:flex;justify-content:space-between;margin-top:8px;}
+  .week-nav-btn{padding:8px 20px;border-radius:10px;border:none;background:#f0f2f8;font-size:14px;font-weight:600;}
+
+  /* Overview */
+  .overview-panel{padding:16px;}
+  .overview-title{font-size:18px;font-weight:700;color:#4a2d7a;margin-bottom:4px;}
+  .overview-sub{font-size:13px;color:#888;margin-bottom:20px;}
+  .big-pct{font-size:52px;font-weight:900;color:#4a2d7a;text-align:center;}
+  .big-bar-track{background:#eee;border-radius:99px;height:10px;margin:12px 24px 24px;}
+  .big-bar-fill{background:#4a2d7a;height:100%;border-radius:99px;transition:width 0.4s;}
+  .sub-card{margin-bottom:14px;padding:14px 16px;border-radius:14px;}
+  .sub-card-row{display:flex;justify-content:space-between;margin-bottom:6px;}
+  .sub-card-name{font-weight:700;font-size:13px;}
+  .sub-card-count{font-size:12px;font-weight:600;}
+  .sub-bar-track{border-radius:99px;height:7px;background:rgba(255,255,255,0.5);}
+  .sub-bar-fill{height:100%;border-radius:99px;transition:width 0.4s;}
+  .sub-pct{font-size:11px;margin-top:4px;}
+  .phase-card{margin-top:8px;padding:16px;border:1.5px solid #eee;border-radius:14px;}
+  .phase-card-title{font-weight:700;font-size:13px;color:#4a2d7a;margin-bottom:10px;}
+  .phase-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .phase-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .phase-name{font-size:13px;font-weight:600;color:#333;}
+  .phase-days{font-size:12px;color:#888;}
+  .gk-note{margin-top:12px;padding:14px 16px;background:#FDEDEC;border-radius:14px;}
+  .gk-note-title{font-size:13px;color:#C0392B;font-weight:700;margin-bottom:6px;}
+  .gk-note-body{font-size:12px;color:#c0392b;}
+
+  /* Syllabus tab */
+  .syllabus-panel{padding:16px;}
+  .syllabus-title{font-size:18px;font-weight:700;color:#4a2d7a;margin-bottom:4px;}
+  .syllabus-sub{font-size:13px;color:#888;margin-bottom:16px;}
+  .subject-card{width:100%;text-align:left;margin-bottom:12px;border:1.5px solid #eee;border-radius:16px;background:#fff;overflow:hidden;}
+  .subject-card-header{display:flex;align-items:center;padding:14px 16px;gap:12px;cursor:pointer;border:none;background:none;width:100%;text-align:left;}
+  .subject-card-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .subject-card-info{flex:1;}
+  .subject-card-name{font-size:15px;font-weight:700;margin-bottom:2px;}
+  .subject-card-stats{font-size:12px;color:#888;}
+  .subject-card-arrow{font-size:16px;color:#ccc;margin-left:4px;}
+  .subject-mini-bar{height:4px;border-radius:99px;background:#eee;margin:0 16px 12px;}
+  .subject-mini-bar-fill{height:100%;border-radius:99px;transition:width 0.4s;}
+  .syll-back{display:flex;align-items:center;gap:8px;padding:14px 16px 8px;cursor:pointer;border:none;background:none;width:100%;text-align:left;}
+  .syll-back-arrow{font-size:18px;color:#4a2d7a;}
+  .syll-back-label{font-size:14px;font-weight:700;color:#4a2d7a;}
+  .syll-subject-header{padding:4px 16px 12px;}
+  .syll-subject-name{font-size:22px;font-weight:800;margin-bottom:2px;}
+  .syll-subject-pct{font-size:13px;color:#888;margin-bottom:8px;}
+  .syll-progress-bar{margin:0 0 4px;height:8px;border-radius:99px;background:#eee;}
+  .syll-progress-fill{height:100%;border-radius:99px;transition:width 0.4s;}
+  .syll-section{margin:0 14px 20px;}
+  .syll-section-title{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;}
+  .syll-task-row{width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;border:1.5px solid #eee;border-radius:11px;background:#fff;display:flex;align-items:flex-start;gap:10px;transition:all 0.15s;}
+  .syll-checkbox{width:20px;height:20px;border-radius:5px;border:2px solid #ccc;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;font-size:11px;color:#fff;transition:all 0.15s;}
+  .syll-task-label{font-size:13px;color:#222;line-height:1.4;flex:1;}
+  .syll-task-label.syll-done{color:#bbb;text-decoration:line-through;}
+  .syll-task-meta{font-size:10px;font-weight:700;font-family:monospace;letter-spacing:0.5px;margin-top:2px;}
+  .syll-search-wrap{display:flex;align-items:center;background:#f3f4f8;border-radius:12px;padding:0 12px;gap:8px;margin:0 16px 14px;}
+  .syll-search-icon{font-size:14px;color:#999;}
+  .syll-search-input{flex:1;border:none;background:transparent;padding:10px 0;font-size:14px;font-family:Georgia,serif;outline:none;color:#222;}
+  .syll-search-input::placeholder{color:#bbb;}
+  .syll-search-clear{border:none;background:none;color:#aaa;font-size:16px;cursor:pointer;padding:4px;}
+  .syll-no-results{text-align:center;padding:28px 20px;color:#aaa;font-size:13px;}
+
+  .syll-task-daytag{font-size:10px;color:#aaa;font-family:monospace;margin-top:1px;}
+
+  /* Search FAB */
+  .search-fab{position:fixed;bottom:24px;right:20px;z-index:100;width:52px;height:52px;border-radius:50%;background:#4a2d7a;border:none;color:#fff;font-size:22px;box-shadow:0 4px 18px rgba(74,45,122,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s;}
+  .search-fab:active{transform:scale(0.93);}
+
+  /* Search overlay */
+  .search-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(30,5,10,0.55);backdrop-filter:blur(3px);}
+  .search-overlay.open{display:flex;flex-direction:column;}
+  .search-sheet{background:#fff;border-radius:20px 20px 0 0;position:absolute;bottom:0;left:0;right:0;max-height:88vh;display:flex;flex-direction:column;}
+  .search-header{padding:18px 18px 10px;display:flex;align-items:center;gap:10px;}
+  .search-input-wrap{flex:1;display:flex;align-items:center;background:#f3f4f8;border-radius:12px;padding:0 12px;gap:8px;}
+  .search-input-wrap span{font-size:16px;color:#999;}
+  .search-input{flex:1;border:none;background:transparent;padding:11px 0;font-size:15px;font-family:Georgia,serif;outline:none;color:#222;}
+  .search-input::placeholder{color:#bbb;}
+  .search-close{padding:8px 10px;border:none;background:none;font-size:14px;color:#4a2d7a;font-weight:700;cursor:pointer;}
+  .search-results{overflow-y:auto;padding:0 16px 32px;flex:1;}
+  .search-hint{text-align:center;padding:36px 20px;color:#bbb;font-size:13px;}
+  .search-empty{text-align:center;padding:36px 20px;color:#aaa;font-size:13px;}
+  .search-count{font-size:12px;color:#999;padding:6px 2px 10px;font-family:monospace;}
+  .search-result-card{border:1.5px solid #eee;border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
+  .search-result-card:active{background:#fdf3f4;border-color:#4a2d7a;}
+  .src-top{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+  .src-day-pill{background:#4a2d7a;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;font-family:monospace;}
+  .src-date{font-size:11px;color:#999;}
+  .src-phase{font-size:10px;color:#9d84d4;font-weight:700;letter-spacing:0.5px;font-family:monospace;}
+  .src-topic{font-size:13px;font-weight:600;color:#222;line-height:1.4;margin-bottom:4px;}
+  .src-topic mark{background:#ede0ff;color:#4a2d7a;border-radius:3px;padding:0 2px;}
+  .src-meta-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .src-subject-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;font-family:monospace;letter-spacing:0.5px;}
+  .src-type-tag{font-size:10px;color:#888;font-family:monospace;}
+  .src-goto{font-size:11px;color:#4a2d7a;font-weight:700;margin-top:5px;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-eyebrow">EXAM PREPARATION</div>
+    <div class="header-title">105-Day Master Plan</div>
+    <div class="header-sub">English · LR · Legal · Quants · GK — Parallel Track</div>
+    <div class="phase-badge" id="phase-badge">Phase 1: Foundation Classes</div>
+    <div class="header-dayinfo" id="header-dayinfo">Day 1 of 105 · Week 1</div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="overall-bar" style="width:0%"></div></div>
+    <div class="progress-labels"><span>Wk 1–5</span><span>Wk 6–10</span><span>Wk 11–15</span></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('today')" id="tab-today">
+      <span class="tab-icon">📅</span><span>Today</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('week')" id="tab-week">
+      <span class="tab-icon">📅</span><span>Week View</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('overview')" id="tab-overview">
+      <span class="tab-icon">🗂️</span><span>Overview</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('syllabus')" id="tab-syllabus">
+      <span class="tab-icon">📚</span><span>Syllabus</span>
+    </button>
+  </div>
+
+  <!-- TODAY PANEL -->
+  <div class="panel active" id="panel-today">
+    <div class="day-nav">
+      <button class="nav-btn" onclick="changeDay(-1)">← Prev</button>
+      <div class="day-center">
+        <div class="day-num" id="day-num-display">Day 1</div>
+        <div class="day-sub" id="day-sub-display">Week 1 · Thu</div>
+      </div>
+      <button class="nav-btn" onclick="changeDay(1)">Next →</button>
+    </div>
+    <div class="jump-row" id="jump-row"></div>
+    <div id="today-content"></div>
+  </div>
+
+  <!-- WEEK PANEL -->
+  <div class="panel" id="panel-week">
+    <div class="week-panel">
+      <div class="week-title" id="week-title">Week 1</div>
+      <div id="week-days-list"></div>
+      <div class="week-nav">
+        <button class="week-nav-btn" onclick="changeDay(-7)">← Prev Week</button>
+        <button class="week-nav-btn" onclick="changeDay(7)">Next Week →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW PANEL -->
+  <div class="panel" id="panel-overview">
+    <div class="overview-panel">
+      <div class="overview-title">Overall Progress</div>
+      <div class="overview-sub" id="ov-sub">0 of 0 total tasks done</div>
+      <div class="big-pct" id="ov-pct">0%</div>
+      <div class="big-bar-track"><div class="big-bar-fill" id="ov-bar" style="width:0%"></div></div>
+      <div id="sub-cards"></div>
+      <div class="phase-card">
+        <div class="phase-card-title">📋 Phase Guide</div>
+        <div class="phase-row"><div class="phase-dot" style="background:#4F7EFF"></div><div><div class="phase-name">Phase 1: Foundation Classes</div><div class="phase-days">Day 1–35</div></div></div>
+        <div class="phase-row"><div class="phase-dot" style="background:#9B59B6"></div><div><div class="phase-name">Phase 2: Books + Practice</div><div class="phase-days">Day 36–70</div></div></div>
+        <div class="phase-row"><div class="phase-dot" style="background:#27AE60"></div><div><div class="phase-name">Phase 3: Integration &amp; Revision</div><div class="phase-days">Day 71–105</div></div></div>
+      </div>
+      <div class="gk-note">
+        <div class="gk-note-title">📰 GK Backlog Note</div>
+        <div class="gk-note-body">~95–100 extra sessions + 35–40 regular classes to be tackled after core syllabus is complete.</div>
+      </div>
+    </div>
+  </div>
+  <!-- SYLLABUS PANEL -->
+  <div class="panel" id="panel-syllabus">
+    <div id="syllabus-content"></div>
+  </div>
+</div>
+
+<!-- Search FAB -->
+<button class="search-fab" onclick="openSearch()" title="Search topics">🔍</button>
+
+<!-- Search Overlay -->
+<div class="search-overlay" id="search-overlay" onclick="handleOverlayClick(event)">
+  <div class="search-sheet">
+    <div class="search-header">
+      <div class="search-input-wrap">
+        <span>🔍</span>
+        <input class="search-input" id="search-input" type="text" placeholder="Search topics, e.g. Constitutional Law…" oninput="doSearch()" autocomplete="off"/>
+      </div>
+      <button class="search-close" onclick="closeSearch()">Close</button>
+    </div>
+    <div class="search-results" id="search-results">
+      <div class="search-hint">Type a keyword to find which days a topic appears on.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATE LOGIC ───────────────────────────────────────────────────────────────
+const START_DATE = new Date(2026, 4, 28); // May 28 2026 = Thursday, Day 1
+const TOTAL_DAYS = 105;
+
+function getDateForDay(dayNum) {
+  const d = new Date(START_DATE);
+  d.setDate(START_DATE.getDate() + (dayNum - 1));
+  return d;
+}
+function getDayLabel(dayNum) {
+  const d = getDateForDay(dayNum);
+  const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+function getWeekday(dayNum) { return getDateForDay(dayNum).getDay(); }
+
+// Figure out today's plan day automatically
+function getTodayPlanDay() {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const start = new Date(START_DATE);
+  start.setHours(0,0,0,0);
+  const diff = Math.round((today - start) / 86400000) + 1;
+  if (diff < 1) return 1;
+  if (diff > TOTAL_DAYS) return TOTAL_DAYS;
+  return diff;
+}
+
+// ─── SUBJECT META ─────────────────────────────────────────────────────────────
+const SUBJECT_META = {
+  "English":               {color:"#4F7EFF",bg:"#EEF3FF",short:"ENG"},
+  "Logical Reasoning":     {color:"#9B59B6",bg:"#F5EEF8",short:"LR"},
+  "Legal Reasoning":       {color:"#E67E22",bg:"#FEF5EC",short:"LEG"},
+  "Quantitative Aptitude": {color:"#27AE60",bg:"#EAFAF1",short:"QA"},
+  "GK & Current Affairs":  {color:"#C0392B",bg:"#FDEDEC",short:"GK"},
+};
+const SUBJECT_ORDER = ["English","Logical Reasoning","Legal Reasoning","Quantitative Aptitude","GK & Current Affairs"];
+
+// ─── NON-NEGOTIABLES ──────────────────────────────────────────────────────────
+const DAILY_NON_NEG = [
+  "📰 Read 1 article (English)",
+  "📚 Revise vocabulary (1800-word list)",
+  "📖 Continue novel reading",
+  "⚖️ Read 1 legal article",
+  "🗞️ Read newspaper (GK)",
+  "✅ Solve 10 GK Today MCQs",
+];
+
+// ─── SYLLABUS DATA ────────────────────────────────────────────────────────────
+const ENG_CLASSES = [
+  "Parts of Speech","Verbs","Tenses","Subject-Verb Agreement",
+  "Reading Comprehension & Analysis","Main Idea","Supporting Idea",
+  "Contextual Vocabulary","Conclusion & Inference","Giving Titles","Tones",
+  "Figures of Speech","Idioms","High-Frequency Words","Phocabulary",
+  "Phrasal Verbs","Prepositions","Nouns & Pronouns","Articles",
+  "Auxiliary Verbs","Antonyms","Synonyms","Adjectives & Comparatives","Modals",
+];
+const ENG_BOOKS = [
+  {book:1,items:[
+    {topic:"Contextual Vocabulary",prereq:7},{topic:"Developing Summary and Main Idea",prereq:5},
+    {topic:"Parts of Speech Introduction through RC",prereq:0},{topic:"Give Title",prereq:9},
+    {topic:"Phocabulary Session 01",prereq:14},{topic:"RC Tones Session 01",prereq:10},
+    {topic:"Figures of Speech Session 01",prereq:11},{topic:"RC Based Inference",prereq:8},
+    {topic:"Main Idea, Supporting Idea, Inference",prereq:6},{topic:"RC Based on Current Affairs",prereq:4},
+    {topic:"RC Based on History",prereq:4},{topic:"RC Based on Literature – Non-Fiction",prereq:4},
+    {topic:"RC Based on Literature – Fiction",prereq:4},{topic:"RC Based Source Questions",prereq:4},
+    {topic:"Verbs: Tenses and Subject Verb Agreement",prereq:3},{topic:"RC Tones Session 02",prereq:10},
+    {topic:"RC on Indian Context",prereq:4},{topic:"RC Based on Economics",prereq:4},
+    {topic:"RC Based on Science and Technology",prereq:4},{topic:"Figures of Speech Session 02",prereq:11},
+    {topic:"RC Based on Psychology",prereq:4},{topic:"Basics of Sentence Rearrangement & Paracompletion",prereq:4},
+    {topic:"RC Based on Negative Detail Questions",prereq:4},
+  ]},
+  {book:2,items:[
+    {topic:"Contextual Vocabulary",prereq:7},{topic:"Developing Summaries and Main Idea",prereq:5},
+    {topic:"Parts of Speech Introduction through RC",prereq:0},{topic:"Give Title",prereq:9},
+    {topic:"Phocabulary 01",prereq:14},{topic:"RC Based on Inference",prereq:8},
+    {topic:"Main Idea, Supporting Idea, Inference",prereq:6},{topic:"RC Based on Current Affairs",prereq:4},
+    {topic:"RC Based on History",prereq:4},{topic:"RC Based on Literature (Non-Fiction)",prereq:4},
+    {topic:"RC Based on Literature (Fiction)",prereq:4},{topic:"RC Based Source Questions",prereq:4},
+    {topic:"Verbs: Tenses and Subject Verb Agreement",prereq:3},{topic:"RC Tones Session",prereq:10},
+    {topic:"RC Based on Indian Context",prereq:4},{topic:"RC Based on Economics",prereq:4},
+    {topic:"RC Based on Science and Technology",prereq:4},{topic:"Figures of Speech Session",prereq:11},
+    {topic:"RC Based on Psychology",prereq:4},{topic:"Basics of Sentence Rearrangement & Paracompletion",prereq:4},
+    {topic:"RC Based on Negative Details Questions",prereq:4},
+  ]},
+  {book:3,items:Array.from({length:20},(_,i)=>({topic:`Assignment ${i+1}`,prereq:23}))},
+  {book:4,items:[
+    {topic:"Reading Comprehension Mixed Bag",prereq:4},{topic:"Summary Writing: Non-Literary Passages",prereq:5},
+    {topic:"RC Based on Idea Flow",prereq:4},{topic:"Speed Enhancement & Eye Span Development",prereq:4},
+    {topic:"Phrasal Verbs",prereq:15},{topic:"RC based on Philosophy",prereq:4},
+    {topic:"Parts of Speech Identification",prereq:0},{topic:"RC Based on Art and Culture",prereq:4},
+    {topic:"Idioms",prereq:12},{topic:"Foreign Phrases",prereq:12},
+    {topic:"RC on Googly Questions",prereq:4},{topic:"Prepositions",prereq:16},
+    {topic:"RC Based on Legal",prereq:4},{topic:"Phocabulary 01",prereq:14},
+    {topic:"RC Based on Geopolitics",prereq:4},{topic:"RC Based on Indian Polity",prereq:4},
+    {topic:"RC with Various Question Types",prereq:4},{topic:"Parallelism & Punctuation Marks",prereq:4},
+    {topic:"Phocabulary 02",prereq:14},{topic:"RC Based on Conclusion Questions",prereq:8},
+    {topic:"RC Based on Factual Questions",prereq:4},
+  ]},
+  {book:5,items:[
+    {topic:"Mixed Bag",prereq:4},{topic:"RC Based on Idea Flow",prereq:4},
+    {topic:"Speed Enhancement & Eye Span Development",prereq:4},{topic:"RC based on Philosophy",prereq:4},
+    {topic:"RC Based on Art and Culture",prereq:4},{topic:"Idioms",prereq:12},
+    {topic:"Foreign Phrases",prereq:12},{topic:"RC on Googly Questions",prereq:4},
+    {topic:"Prepositions",prereq:16},{topic:"RC Based on Legal",prereq:4},
+    {topic:"RC Based on Geopolitics",prereq:4},{topic:"RC Based on Indian Polity",prereq:4},
+    {topic:"RC with Various Question Types",prereq:4},{topic:"Parallelism & Punctuation Marks",prereq:4},
+    {topic:"RC Based on Conclusion Questions",prereq:8},{topic:"RC Based on Factual Questions",prereq:4},
+  ]},
+  {book:6,items:[
+    {topic:"Vocabulary Practice 01",prereq:13},{topic:"Vocabulary Practice 02",prereq:13},
+    {topic:"Contextual Vocabulary 01",prereq:7},{topic:"Articles",prereq:18},
+    {topic:"Voice Transformation",prereq:1},{topic:"Narrations",prereq:1},
+    {topic:"Modals",prereq:23},{topic:"Adjectives and Comparatives",prereq:22},
+    {topic:"Nouns, Pronouns and Articles",prereq:17},{topic:"Auxiliary Verbs",prereq:19},
+    {topic:"Conjunctions",prereq:0},{topic:"Word Usage",prereq:13},
+    {topic:"Antonym",prereq:20},{topic:"Synonym",prereq:21},
+    {topic:"Error Detection",prereq:3},{topic:"Fill in the Blanks",prereq:7},
+    {topic:"Maximum Fill",prereq:7},
+  ]},
+];
+
+const LR_CLASSES = [
+  "CR: Introduction","CR: Strengthening & Weakening Arguments","CR: Conclusions",
+  "CR: Assumptions","CR: Statement Based Inference","CR: Evaluate the Arguments",
+  "CR: Passage Based Questions","CR: Para Based Thematic Passage Reading",
+  "CR: Mixed Bag Questions","CR: Flow in the Arguments","CR: Parallel Reasoning",
+  "AR: Coding & Decoding","AR: Blood Relations","AR: Distance & Directions",
+  "AR: Circular Arrangements","AR: Linear Arrangements","AR: Clocks & Calendars",
+  "AR: Syllogism","AR: Directions","AR: Calendar & Time Sequences",
+  "AR: Conditional Puzzles","AR: Miscellaneous Puzzles","AR: Tabulation Puzzles",
+  "AR: Cubes & Cuboids",
+];
+const LR_BOOKS = [
+  {book:1,items:[
+    {topic:"Statement Based — Conclusions, Assumptions, Cause Statement",prereq:2},
+    {topic:"Statement Based — Assertion Reasoning, Cause & Effect, Strong/Weak Arguments",prereq:1},
+    {topic:"Statement Based — Probably/Definitely True and False",prereq:4},
+    {topic:"Statement Based — Para Completion, Analogies, Data Sufficiency",prereq:7},
+    {topic:"Intro to Critical Reasoning — Assumptions",prereq:3},
+    {topic:"Conclusion and Inference",prereq:2},{topic:"Strengthening and Weakening Arguments",prereq:1},
+    {topic:"Passage Based CR Practice — Drill One",prereq:6},{topic:"Passage Based CR Practice — Drill Two",prereq:6},
+    {topic:"Flaw in the Argument & Resolve the Paradox",prereq:5},
+    {topic:"Parallel Reasoning and Bold Faced Arguments",prereq:10},
+    {topic:"Evaluate the Argument & Point of Contention",prereq:5},
+    {topic:"CR Thematic Passages — Economics One",prereq:8},{topic:"CR Thematic Passages — Geopolitics One",prereq:8},
+    {topic:"CR Thematic Passages — Law",prereq:8},{topic:"CR Thematic Passages — Arts and Literature",prereq:8},
+    {topic:"CR Mixed Bag Passages — One",prereq:8},{topic:"Coding and Decoding",prereq:11},
+    {topic:"Direction and Distance",prereq:13},{topic:"Blood Relations",prereq:12},
+    {topic:"Syllogism / Logical Deduction",prereq:17},{topic:"Data Arrangement — Introduction",prereq:15},
+    {topic:"Sitting Arrangements / Data Arrangements",prereq:15},
+    {topic:"Tabulation Puzzles",prereq:22},{topic:"Conditional Puzzles",prereq:20},
+  ]},
+  {book:2,items:[
+    {topic:"Statement Based — Conclusions, Assumptions, Cause Statement",prereq:2},
+    {topic:"Statement Based — Assertion Reasoning, Cause & Effect, Strong/Weak Arguments",prereq:1},
+    {topic:"Statement Based — Probably/Definitely True and False",prereq:4},
+    {topic:"Statement Based — Para Completion, Analogies, Data Sufficiency",prereq:7},
+    {topic:"Intro to Critical Reasoning — Assumptions",prereq:3},
+    {topic:"Conclusion and Inference",prereq:2},{topic:"Strengthening and Weakening Arguments",prereq:1},
+    {topic:"Passage Based CR Practice — Drill One",prereq:6},{topic:"Passage Based CR Practice — Drill Two",prereq:6},
+    {topic:"Flaw in the Argument & Resolve the Paradox",prereq:5},
+    {topic:"Parallel Reasoning and Bold Faced Arguments",prereq:10},
+    {topic:"Evaluate the Argument & Point of Contention",prereq:5},
+    {topic:"CR Thematic Passages — Economics One",prereq:8},{topic:"CR Thematic Passages — Geopolitics One",prereq:8},
+    {topic:"CR Thematic Passages — Law",prereq:8},{topic:"CR Thematic Passages — Arts and Literature",prereq:8},
+    {topic:"CR Mixed Bag Passages — One",prereq:8},{topic:"Coding and Decoding",prereq:11},
+    {topic:"Direction and Distance",prereq:13},{topic:"Blood Relations",prereq:12},
+    {topic:"Syllogism / Logical Deduction",prereq:17},{topic:"Data Arrangement — Introduction",prereq:15},
+    {topic:"Sitting Arrangements / Data Arrangements",prereq:15},
+    {topic:"Tabulation Puzzles",prereq:22},{topic:"Conditional Puzzles",prereq:20},
+  ]},
+  {book:3,items:Array.from({length:26},(_,i)=>({topic:`Assignment ${i+1}`,prereq:23}))},
+  {book:4,items:[
+    {topic:"Logical Connectors & Binary Logic",prereq:0},
+    {topic:"CR Thematic Passages — History",prereq:8},{topic:"Thematic Passages — Politics",prereq:8},
+    {topic:"Thematic Passages — Science",prereq:8},{topic:"Thematic Passages — Environment",prereq:8},
+    {topic:"Thematic Passages — Philosophy",prereq:8},{topic:"Thematic Passages — Economics",prereq:8},
+    {topic:"Para Based Mixed Bag Passages — One",prereq:8},{topic:"Mixed Bag Passages — Two",prereq:8},
+    {topic:"Mixed Bag Passages — Three",prereq:8},
+    {topic:"Sequence and Series, Analogy and Odd One Out",prereq:11},
+    {topic:"Calendar",prereq:19},{topic:"Clocks",prereq:16},{topic:"Miscellaneous Puzzles",prereq:21},
+    {topic:"Ranking Test",prereq:11},{topic:"Dice, Cubes and Cuboids",prereq:23},
+    {topic:"Inequality",prereq:11},{topic:"Input & Output",prereq:11},
+    {topic:"Alphabet Test and Miscellaneous Series",prereq:11},{topic:"Data Sufficiency",prereq:11},
+  ]},
+  {book:5,items:[
+    {topic:"Logical Connectors & Binary Logic",prereq:0},
+    {topic:"CR Thematic Passages — History",prereq:8},{topic:"Thematic Passages — Politics",prereq:8},
+    {topic:"Thematic Passages — Science",prereq:8},{topic:"Thematic Passages — Environment",prereq:8},
+    {topic:"Thematic Passages — Philosophy",prereq:8},{topic:"Thematic Passages — Economics",prereq:8},
+    {topic:"Para Based Mixed Bag",prereq:8},{topic:"Mixed Bag Passages — One",prereq:8},
+    {topic:"Sequence and Series",prereq:11},{topic:"Calendar",prereq:19},{topic:"Clocks",prereq:16},
+    {topic:"Miscellaneous Puzzles",prereq:21},{topic:"Ranking Test",prereq:11},
+  ]},
+  {book:6,items:Array.from({length:20},(_,i)=>({topic:`Assignment ${i+1}`,prereq:23}))},
+];
+
+const LEGAL_CLASSES = [
+  "Law of Torts — S1","Law of Torts — S2","Law of Torts — S3","Law of Torts — S4",
+  "Law of Torts — S5","Law of Torts — S6","Law of Torts — S7",
+  "Law of Crimes — S1","Law of Crimes — S2","Law of Crimes — S3","Law of Crimes — S4",
+  "Law of Crimes — S5","Law of Crimes — S6","Law of Crimes — S7","Law of Crimes — S8",
+  "Law of Contracts — S1","Law of Contracts — S2","Law of Contracts — S3","Law of Contracts — S4",
+  "Law of Contracts — S5","Law of Contracts — S6","Law of Contracts — S7","Law of Contracts — S8",
+  "Constitutional Law — S1","Constitutional Law — S2","Constitutional Law — S3","Constitutional Law — S4",
+  "Constitutional Law — S5","Constitutional Law — S6","Constitutional Law — S7","Constitutional Law — S8",
+  "Constitutional Law — S9","Constitutional Law — S10",
+  "Hindu Marriage Act — S1","Hindu Marriage Act — S2","Hindu Marriage Act — S3",
+  "Hindu Succession Act — S1","Hindu Succession Act — S2","Hindu Succession Act — S3",
+  "Hindu Inheritance Act — S1","Hindu Inheritance Act — S2","Hindu Inheritance Act — S3",
+  "Muslim Marriage Act — S1","Muslim Marriage Act — S2","Muslim Marriage Act — S3",
+  "Muslim Succession Act — S1","Muslim Succession Act — S2","Muslim Succession Act — S3",
+  "Muslim Inheritance Act — S1","Muslim Inheritance Act — S2","Muslim Inheritance Act — S3",
+  "Legal CA — S1","Legal CA — S2","Legal CA — S3","Legal CA — S4","Legal CA — S5",
+  "Legal CA — S6","Legal CA — S7","Legal CA — S8","Legal CA — S9","Legal CA — S10",
+  "Legal CA — S11","Legal CA — S12","Legal CA — S13",
+];
+const LEGAL_BOOKS = [
+  {book:1,items:[
+    {topic:"Law of Contracts Theory",prereq:15},{topic:"Law of Contracts Assignment",prereq:22},
+    {topic:"Law of Torts Theory",prereq:0},{topic:"Law of Torts Assignment",prereq:6},
+    {topic:"Criminal Law Theory",prereq:7},{topic:"Criminal Law Assignment",prereq:14},
+    {topic:"Constitutional Law Theory",prereq:23},{topic:"Constitutional Law Assignment",prereq:32},
+    {topic:"Miscellaneous Laws Theory",prereq:33},
+  ]},
+  {book:2,items:[
+    {topic:"Important Legal Issues — Articles",prereq:50},{topic:"Practice Questions",prereq:50},
+  ]},
+  {book:3,items:[
+    {topic:"Constitutional Law & Law of Crimes",prereq:32},{topic:"Law of Contracts & Law of Torts",prereq:22},
+    {topic:"Mixed Bag on Miscellaneous Laws (Set 1)",prereq:48},{topic:"Mixed Bag on Miscellaneous Laws (Set 2)",prereq:48},
+    {topic:"Mixed Bag on Miscellaneous Laws (Set 3)",prereq:48},{topic:"Mixed Bag on Miscellaneous Laws (Set 4)",prereq:48},
+    {topic:"Mixed Bag on Current Legal Knowledge (Set 1)",prereq:52},{topic:"Mixed Bag on Current Legal Knowledge (Set 2)",prereq:52},
+    {topic:"Miscellaneous Practice Sheet (Set 1)",prereq:48},{topic:"Miscellaneous Practice Sheet (Set 2)",prereq:48},
+    {topic:"Constitutional Law & Law of Crimes (Repeat)",prereq:32},{topic:"Law of Contracts & Law of Torts (Repeat)",prereq:22},
+    {topic:"Mixed Bag on Miscellaneous Laws — Repeat 1",prereq:48},{topic:"Mixed Bag on Miscellaneous Laws — Repeat 2",prereq:48},
+    {topic:"Mixed Bag on Miscellaneous Laws — Repeat 3",prereq:48},{topic:"Mixed Bag on Miscellaneous Laws — Repeat 4",prereq:48},
+    {topic:"Current Legal Knowledge — Repeat 1",prereq:52},{topic:"Current Legal Knowledge — Repeat 2",prereq:52},
+    {topic:"Miscellaneous Practice Sheet — Repeat 1",prereq:48},{topic:"Miscellaneous Practice Sheet — Repeat 2",prereq:48},
+  ]},
+  {book:4,items:[
+    {topic:"Constitutional Laws",prereq:32},{topic:"Law of Contract",prereq:22},
+    {topic:"Law of Crimes",prereq:14},{topic:"Law of Tort",prereq:6},
+    {topic:"Miscellaneous Laws",prereq:48},
+    ...Array.from({length:23},(_,i)=>({topic:`Assignment ${i+6}`,prereq:50})),
+  ]},
+  {book:5,items:[
+    {topic:"Constitutional Law I",prereq:27},{topic:"Constitutional Law II",prereq:32},
+    {topic:"Law of Contract I",prereq:18},{topic:"Law of Contract II",prereq:22},
+    {topic:"Law of Torts I",prereq:3},{topic:"Law of Torts II",prereq:6},
+    {topic:"Law of Crimes I",prereq:10},{topic:"Law of Crimes II",prereq:14},
+    ...Array.from({length:7},(_,i)=>({topic:`Assignment ${i+9}`,prereq:50})),
+  ]},
+  {book:6,items:[
+    {topic:"[ALIT & SLAT] Law of Torts",prereq:6},{topic:"[ALIT & SLAT] Constitutional Law",prereq:32},
+    {topic:"[ALIT & SLAT] Law of Crimes",prereq:14},{topic:"[ALIT & SLAT] Law of Contract",prereq:22},
+    {topic:"[ALIT & SLAT] Miscellaneous Laws",prereq:48},
+    {topic:"[CLAD] Intellectual Property Law",prereq:50},{topic:"[CLAD] Family Law",prereq:50},
+    {topic:"[CLAD] International Law",prereq:50},{topic:"[CLAD] Environmental Law",prereq:50},
+    {topic:"[CLAD] Company Law & IBC",prereq:50},
+  ]},
+];
+
+const QA_CLASSES = [
+  "Percentages","Ratio & Proportions","Profit & Loss","Simple Interest",
+  "Compound Interest","Averages","Partnership","Time & Work",
+  "Time, Speed & Distance","Relative Speed","Mensuration 2D","Mensuration 3D",
+  "Venn Diagrams","Probability","Mixture Alligation","Boat and Stream",
+  "Permutation & Combination",
+];
+const QA_BOOKS = [
+  {book:1,items:[
+    {topic:"Basics of Percentage",prereq:0},{topic:"Percentage Practice I",prereq:0},{topic:"Percentage Practice II",prereq:0},
+    {topic:"Basics of Averages & Practice Questions",prereq:5},
+    {topic:"Ratio and Proportion (I)",prereq:1},{topic:"Ratio and Proportion (II)",prereq:1},
+    {topic:"Caselet DI Based on Percentages and Ratio",prereq:1},
+    {topic:"Data Interpretation Based on Venn Diagram",prereq:12},
+    {topic:"Basics of Profit and Loss & Examples",prereq:2},{topic:"Profit and Loss Practice Questions",prereq:2},
+    {topic:"DI Based on Profit, Loss and Discount",prereq:2},
+    {topic:"Basics of Simple Interest & Practice Questions",prereq:3},
+    {topic:"Basics of Compound Interest & Examples",prereq:4},{topic:"Compound Interest Practice Questions",prereq:4},
+    {topic:"DI Based on Simple and Compound Interest",prereq:4},
+    {topic:"Basics of Mensuration 2D & Practice Questions",prereq:10},
+    {topic:"Basics of Mensuration 3D & Practice Questions",prereq:11},
+    {topic:"Data Interpretation Based on Mensuration",prereq:11},
+    {topic:"Basics of Time and Work & Practice Questions",prereq:7},
+    {topic:"Jail Rule, Chain Rule and Pipe & Cistern",prereq:7},
+    {topic:"Data Interpretation Based on Time and Work",prereq:7},
+  ]},
+  {book:2,items:[
+    {topic:"Basics of Percentage",prereq:0},{topic:"DI Based on Percentages",prereq:0},
+    {topic:"Average",prereq:5},{topic:"DI Based on Average",prereq:5},
+    {topic:"Ratio & Proportion",prereq:1},{topic:"DI Based on Ratio & Proportion",prereq:1},
+    {topic:"Set Theory and Venn Diagram",prereq:12},{topic:"DI Based on Set Theory and Venn Diagram",prereq:12},
+    {topic:"Profit, Loss and Discount",prereq:2},{topic:"DI Based on Profit, Loss and Discount",prereq:2},
+    {topic:"Simple Interest",prereq:3},{topic:"DI Based on Simple and Compound Interest",prereq:4},
+    {topic:"Compound Interest",prereq:4},{topic:"DI Based on Simple and Compound Interest (II)",prereq:4},
+    {topic:"Mensuration 2D",prereq:10},{topic:"DI Based on Mensuration",prereq:11},
+    {topic:"Mensuration 3D",prereq:11},{topic:"DI Based on Mensuration (II)",prereq:11},
+    {topic:"Time and Work",prereq:7},{topic:"DI Based on Time and Work",prereq:7},
+    {topic:"Pipes and Cistern",prereq:7},{topic:"DI Based on Pipes and Cistern",prereq:7},
+    {topic:"Basic General Caselet DI I",prereq:1},{topic:"Basic General Caselet DI II",prereq:1},
+    {topic:"Basic General Caselet DI III",prereq:1},{topic:"Basic General Caselet DI IV",prereq:1},
+    {topic:"Basic General Caselet DI V",prereq:1},{topic:"Basic Caselet DI VI",prereq:1},
+    {topic:"Basic DI I",prereq:1},{topic:"Basic DI II",prereq:1},
+    {topic:"Basic DI III",prereq:1},{topic:"Basic DI IV",prereq:1},
+  ]},
+  {book:3,items:[
+    {topic:"Ratio Concept",prereq:1},{topic:"Percentage Concept",prereq:0},{topic:"Average Concepts",prereq:5},
+    {topic:"Mix of Ratio, Percentage and Average I",prereq:5},{topic:"Mix of Ratio, Percentage and Average II",prereq:5},
+    {topic:"Mix of Ratio, Percentage and Average III",prereq:5},{topic:"Based on Venn Diagram",prereq:12},
+    {topic:"Miscellaneous I",prereq:5},{topic:"Based on Mensuration",prereq:11},{topic:"Miscellaneous II",prereq:11},
+    {topic:"Ratio Concepts (Repeat)",prereq:1},{topic:"Percentage Concepts (Repeat)",prereq:0},
+    {topic:"Average Concepts (Repeat)",prereq:5},{topic:"Mix of Ratio, Percentage and Average I (Repeat)",prereq:5},
+    {topic:"Mix of Ratio, Percentage and Average II (Repeat)",prereq:5},{topic:"Mix of Ratio, Percentage and Average III (Repeat)",prereq:5},
+    {topic:"Based on Venn Diagram (Repeat)",prereq:12},{topic:"Miscellaneous I (Repeat)",prereq:5},
+    {topic:"Based on Mensuration (Repeat)",prereq:11},{topic:"Miscellaneous II (Repeat)",prereq:11},
+  ]},
+  {book:4,items:[
+    {topic:"DI on Mixed Graph",prereq:5},{topic:"DI on Venn Diagram",prereq:12},
+    {topic:"Partnership",prereq:6},{topic:"DI Based on Partnership",prereq:6},
+    {topic:"Mixture Allegation",prereq:14},{topic:"DI Based on Mixture Allegation",prereq:14},
+    {topic:"Time and Distance",prereq:8},{topic:"Train",prereq:9},{topic:"Boat and Stream",prereq:15},
+    {topic:"DI Based on Time, Speed and Distance",prereq:9},
+    {topic:"Permutation and Combination",prereq:16},{topic:"Probability",prereq:13},
+    {topic:"DI Based on Probability",prereq:13},{topic:"DI Based on Income and Expenditure",prereq:2},
+    {topic:"Mixed Bag I",prereq:16},{topic:"Mixed Bag II",prereq:16},
+    {topic:"Caselet Based on Percentage and Ratio I",prereq:1},{topic:"Caselet Based on Percentage and Ratio II",prereq:1},
+    {topic:"Caselet Based on Percentage and Ratio III",prereq:1},
+  ]},
+  {book:5,items:[
+    {topic:"DI Based on Mixed Graph",prereq:5},{topic:"DI Based on Venn Diagram",prereq:12},
+    {topic:"Partnership",prereq:6},{topic:"DI Based on Partnership",prereq:6},
+    {topic:"Mixture Allegation",prereq:14},{topic:"DI Based on Mixture Allegation",prereq:14},
+    {topic:"Time and Distance",prereq:8},{topic:"Train",prereq:9},{topic:"Boat and Stream",prereq:15},
+    {topic:"DI Based on Time and Distance",prereq:9},
+    {topic:"Permutation and Combination",prereq:16},{topic:"Probability",prereq:13},
+    {topic:"DI Based on Probability",prereq:13},{topic:"DI Based on Income and Expenditure",prereq:2},
+    {topic:"Mixed Bag I",prereq:16},{topic:"Mixed Bag II",prereq:16},
+    {topic:"Caselet DI I",prereq:1},{topic:"Caselet DI II",prereq:1},{topic:"Caselet DI III",prereq:1},
+    {topic:"Caselet DI IV",prereq:1},{topic:"Caselet DI V",prereq:1},{topic:"Caselet DI VI",prereq:1},
+    {topic:"Caselet DI VII",prereq:1},
+    {topic:"Mixed Bag Interpretation I",prereq:16},{topic:"Mixed Bag Interpretation II",prereq:16},
+    {topic:"Mixed Bag Interpretation III",prereq:16},{topic:"Mixed Bag Interpretation IV",prereq:16},
+  ]},
+];
+
+// ─── BUILD SUBJECT SEQUENCE ───────────────────────────────────────────────────
+function buildSubjectSequence(classes, books, subjectName) {
+  const tasks = [];
+  const classesDone = new Set();
+  const placed = new Set();
+  function flushUnlocked() {
+    for (const book of books) {
+      for (let i = 0; i < book.items.length; i++) {
+        const key = `${book.book}_${i}`;
+        if (!placed.has(key) && classesDone.has(book.items[i].prereq)) {
+          placed.add(key);
+          tasks.push({subject:subjectName,type:"assignment",label:book.items[i].topic,book:book.book,assignmentNum:i+1});
+        }
+      }
+    }
+  }
+  for (let ci = 0; ci < classes.length; ci++) {
+    tasks.push({subject:subjectName,type:"class",label:classes[ci],classIdx:ci});
+    classesDone.add(ci);
+    flushUnlocked();
+  }
+  for (const book of books) {
+    for (let i = 0; i < book.items.length; i++) {
+      const key = `${book.book}_${i}`;
+      if (!placed.has(key)) { placed.add(key); tasks.push({subject:subjectName,type:"assignment",label:book.items[i].topic,book:book.book,assignmentNum:i+1}); }
+    }
+  }
+  return tasks;
+}
+
+// ─── BUILD PLAN ───────────────────────────────────────────────────────────────
+function buildPlan() {
+  const seqs = {
+    eng:   buildSubjectSequence(ENG_CLASSES,   ENG_BOOKS,   "English"),
+    lr:    buildSubjectSequence(LR_CLASSES,    LR_BOOKS,    "Logical Reasoning"),
+    legal: buildSubjectSequence(LEGAL_CLASSES, LEGAL_BOOKS, "Legal Reasoning"),
+    qa:    buildSubjectSequence(QA_CLASSES,    QA_BOOKS,    "Quantitative Aptitude"),
+  };
+  const ptrs = {eng:0,lr:0,legal:0,qa:0};
+  function take(key,n) {
+    const out=[];
+    for(let i=0;i<n&&ptrs[key]<seqs[key].length;i++) out.push(seqs[key][ptrs[key]++]);
+    return out;
+  }
+  // wd: 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+  const WD_PATTERNS = {
+    4:[["eng",2],["lr",2],["qa",1]],
+    5:[["legal",2],["eng",1],["lr",1]],
+    1:[["eng",2],["legal",2],["qa",1]],
+    2:[["lr",2],["qa",2],["eng",1]],
+    3:[["legal",2],["qa",2],["lr",1]],
+  };
+  const WD_NAMES = {0:"Sun",1:"Mon",2:"Tue",3:"Wed",4:"Thu",5:"Fri",6:"Sat"};
+  const days = [];
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    const wd = getWeekday(d);
+    const label = getDayLabel(d);
+    const week = Math.ceil(d/7);
+    if (wd===0) { days.push({dayNum:d,label,week,weekday:"Sun",nonNeg:[],subjectTasks:{},isFree:true,isSat:false}); continue; }
+    if (wd===6) { days.push({dayNum:d,label,week,weekday:"Sat",nonNeg:DAILY_NON_NEG.map(l=>({label:l})),subjectTasks:{},isFree:false,isSat:true}); continue; }
+    const nonNeg = DAILY_NON_NEG.map(l=>({label:l}));
+    const gkTasks = [
+      {label:"🕓 Attend & revise 4 PM GK Class",type:"gk_class"},
+      {label:"📑 Indian Express 'Explained' — read today's section",type:"gk_ie"},
+    ];
+    const legalExtra = wd===1 ? [{label:"📰 Read weekly Legal CA Magazine & make notes",type:"legal_mag"}] : [];
+    const subjectTasks = {};
+    for (const [key,n] of (WD_PATTERNS[wd]||[])) {
+      const taken = take(key,n);
+      if (taken.length>0) { const s=taken[0].subject; subjectTasks[s]=[...(subjectTasks[s]||[]),...taken]; }
+    }
+    if (legalExtra.length) subjectTasks["Legal Reasoning"]=[...legalExtra,...(subjectTasks["Legal Reasoning"]||[])];
+    subjectTasks["GK & Current Affairs"]=[...gkTasks,...(subjectTasks["GK & Current Affairs"]||[])];
+    days.push({dayNum:d,label,week,weekday:WD_NAMES[wd],nonNeg,subjectTasks,isFree:false,isSat:false});
+  }
+  // overflow
+  const leftover=[...seqs.eng.slice(ptrs.eng),...seqs.lr.slice(ptrs.lr),...seqs.legal.slice(ptrs.legal),...seqs.qa.slice(ptrs.qa)];
+  if(leftover.length){ for(let di=days.length-1;di>=0;di--){ if(!days[di].isFree&&!days[di].isSat){ leftover.forEach(t=>{ const s=t.subject; days[di].subjectTasks[s]=[...(days[di].subjectTasks[s]||[]),t]; }); break; } } }
+  return days;
+}
+
+const PLAN = buildPlan();
+
+// ─── SYLLABUS LOOKUP MAP ──────────────────────────────────────────────────────
+// Maps each plan task to its checked key(s). We identify by sub+label+book+assignmentNum+type.
+const SYLLABUS_TASK_KEYS = {};
+
+PLAN.forEach(day => {
+  if (day.isFree || day.isSat) return;
+  Object.entries(day.subjectTasks).forEach(([sub, tasks]) => {
+    tasks.forEach((task, i) => {
+      const id = sub+"||"+task.label+"||"+(task.book||"")+"||"+(task.assignmentNum||"")+"||"+(task.type||"");
+      if (!SYLLABUS_TASK_KEYS[id]) SYLLABUS_TASK_KEYS[id] = [];
+      SYLLABUS_TASK_KEYS[id].push(day.dayNum+"_"+sub+"_"+i);
+    });
+  });
+});
+
+const SYLLABUS_SEQ = {
+  "English":               buildSubjectSequence(ENG_CLASSES,   ENG_BOOKS,   "English"),
+  "Logical Reasoning":     buildSubjectSequence(LR_CLASSES,    LR_BOOKS,    "Logical Reasoning"),
+  "Legal Reasoning":       buildSubjectSequence(LEGAL_CLASSES, LEGAL_BOOKS, "Legal Reasoning"),
+  "Quantitative Aptitude": buildSubjectSequence(QA_CLASSES,    QA_BOOKS,    "Quantitative Aptitude"),
+};
+
+function syllTaskId(task) {
+  return task.subject+"||"+task.label+"||"+(task.book||"")+"||"+(task.assignmentNum||"")+"||"+(task.type||"");
+}
+function getSyllTaskCheckedKeys(task) {
+  return SYLLABUS_TASK_KEYS[syllTaskId(task)] || [];
+}
+function isSyllTaskChecked(task) {
+  const keys = getSyllTaskCheckedKeys(task);
+  return keys.length > 0 && keys.some(k => checked[k]);
+}
+function toggleSyllTask(encodedId) {
+  // encodedId is base64-like index into a flat list — we use a lookup table instead
+  // We store tasks in SYLL_TASK_LIST and reference by index
+  const task = SYLL_TASK_LIST[parseInt(encodedId)];
+  if (!task) return;
+  const keys = getSyllTaskCheckedKeys(task);
+  if (!keys.length) return;
+  const anyChecked = keys.some(k => checked[k]);
+  keys.forEach(k => { checked[k] = !anyChecked; });
+  saveChecked();
+  render();
+}
+function getSyllSubjectProgress(sub) {
+  const seq = SYLLABUS_SEQ[sub];
+  if (!seq) return {done:0, total:0};
+  let done = 0;
+  seq.forEach(task => { if(isSyllTaskChecked(task)) done++; });
+  return {done, total: seq.length};
+}
+
+// Flat list of all syllabus tasks for index-based toggle
+const SYLL_TASK_LIST = [];
+["English","Logical Reasoning","Legal Reasoning","Quantitative Aptitude"].forEach(sub => {
+  (SYLLABUS_SEQ[sub]||[]).forEach(task => SYLL_TASK_LIST.push(task));
+});
+
+
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let currentDay = getTodayPlanDay(); // Auto-detect today!
+let checked = {};
+let activeTab = "today";
+let syllabusSubject = null; // null = subject list, string = drill-down subject
+let syllabusSearch = ""; // search query inside drill-down
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+function loadChecked() {
+  try { const v = localStorage.getItem("examPlanHTML_v1"); if(v) checked = JSON.parse(v); } catch{}
+}
+function saveChecked() {
+  try { localStorage.setItem("examPlanHTML_v1", JSON.stringify(checked)); } catch{}
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function countDayTasks(d) {
+  if(!d||d.isFree) return {total:0,done:0};
+  let total=d.nonNeg.length, done=0;
+  d.nonNeg.forEach((_,i)=>{ if(checked[`${d.dayNum}_nn_${i}`]) done++; });
+  Object.entries(d.subjectTasks).forEach(([sub,tasks])=>{
+    tasks.forEach((t,i)=>{ total++; if(checked[`${d.dayNum}_${sub}_${i}`]) done++; });
+  });
+  return {total,done};
+}
+
+function getOverall() {
+  let total=0,done=0;
+  PLAN.forEach(d=>{ const c=countDayTasks(d); total+=c.total; done+=c.done; });
+  return {total,done,pct:total?Math.round((done/total)*100):0};
+}
+
+function getPhase(d) {
+  if(d<=35) return "Phase 1: Foundation Classes";
+  if(d<=70) return "Phase 2: Books + Practice";
+  return "Phase 3: Integration & Revision";
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  const day = PLAN[currentDay-1];
+  const {total:dayTotal,done:dayDone} = countDayTasks(day);
+  const dayPct = dayTotal?Math.round((dayDone/dayTotal)*100):0;
+  const overall = getOverall();
+
+  // Header
+  document.getElementById("phase-badge").textContent = getPhase(currentDay);
+  document.getElementById("header-dayinfo").textContent = `Day ${currentDay} of ${TOTAL_DAYS} · Week ${day?.week} · ${day?.label}`;
+  document.getElementById("overall-bar").style.width = overall.pct + "%";
+
+  // Tabs
+  ["today","week","overview","syllabus"].forEach(t=>{
+    document.getElementById(`tab-${t}`).className = "tab-btn" + (activeTab===t?" active":"");
+    document.getElementById(`panel-${t}`).className = "panel" + (activeTab===t?" active":"");
+  });
+
+  // Jump row
+  const jr = document.getElementById("jump-row");
+  jr.innerHTML = "";
+  for(let i=0;i<15;i++){
+    const d=i*7+1;
+    const btn=document.createElement("button");
+    btn.className="jump-btn"+(d===currentDay?" active":"");
+    btn.textContent="D"+d;
+    btn.onclick=()=>{currentDay=d;render();};
+    jr.appendChild(btn);
+  }
+
+  // Day display
+  document.getElementById("day-num-display").textContent = `Day ${currentDay}`;
+  document.getElementById("day-sub-display").textContent = `Week ${day?.week} · ${day?.weekday}`;
+
+  // TODAY CONTENT
+  const tc = document.getElementById("today-content");
+  if(day?.isFree){
+    tc.innerHTML=`<div class="free-day"><div class="emoji">🌿</div><h2>Sunday — Rest Day</h2><p>Recharge. You've earned it.</p></div>`;
+  } else {
+    let html = "";
+    // progress bar
+    html += `<div class="day-progress">
+      <div class="day-progress-row">
+        <span>Today's Progress</span>
+        <span class="day-progress-count">${dayDone}/${dayTotal} &nbsp;·&nbsp; <span style="color:${dayPct===100?'#27ae60':'#4F7EFF'}">${dayPct}%</span></span>
+      </div>
+      <div class="day-progress-track"><div class="day-progress-fill${dayPct===100?' complete':''}" style="width:${dayPct}%"></div></div>
+    </div>`;
+    if(day?.isSat) html+=`<p class="sat-note">Saturday — Daily Non-Negotiables Only</p>`;
+
+    // Daily non-negotiables section
+    html+=`<div class="section">
+      <div class="section-header"><span class="section-label" style="color:#444">📌 Daily Non-Negotiables</span></div>`;
+    day.nonNeg.forEach((task,i)=>{
+      const key=`${currentDay}_nn_${i}`;
+      const isChecked=!!checked[key];
+      html+=taskRowHTML(task.label,"daily",null,null,isChecked,"#555",key);
+    });
+    html+=`</div>`;
+
+    // Subject sections (weekdays only)
+    if(!day.isSat){
+      SUBJECT_ORDER.forEach(sub=>{
+        const tasks=day.subjectTasks[sub];
+        if(!tasks||!tasks.length) return;
+        const meta=SUBJECT_META[sub];
+        html+=`<div class="section">
+          <div class="section-header">
+            <span class="section-badge" style="background:${meta.bg};color:${meta.color}">${meta.short}</span>
+            <span class="section-label" style="color:${meta.color}">${sub}</span>
+          </div>`;
+        tasks.forEach((task,i)=>{
+          const key=`${currentDay}_${sub}_${i}`;
+          const isChecked=!!checked[key];
+          html+=taskRowHTML(task.label,task.type||"other",task.book,task.assignmentNum,isChecked,meta.color,key);
+        });
+        html+=`</div>`;
+      });
+    }
+    tc.innerHTML=html;
+  }
+
+  // SYLLABUS
+  renderSyllabus();
+
+  // WEEK VIEW
+  const week = day?.week;
+  document.getElementById("week-title").textContent = `Week ${week}`;
+  const wdl = document.getElementById("week-days-list");
+  const weekStart=(week-1)*7+1;
+  let whtml="";
+  for(let i=0;i<7;i++){
+    const d=PLAN[weekStart-1+i];
+    if(!d) continue;
+    const {total,done}=countDayTasks(d);
+    const pct=total?Math.round((done/total)*100):0;
+    whtml+=`<button class="week-day-btn${d.dayNum===currentDay?" active-day":""}${d.isFree?" free-bg":""}" onclick="currentDay=${d.dayNum};activeTab='today';render();">
+      <div>
+        <span class="week-day-name">Day ${d.dayNum}</span>
+        <span class="week-day-date">${d.label}</span>
+        ${d.isFree?`<span class="week-day-badge" style="color:#27ae60">🌿 Rest</span>`:""}
+        ${d.isSat?`<span class="week-day-badge" style="color:#e67e22">Daily only</span>`:""}
+      </div>
+      <div>${!d.isFree?`<div class="week-day-count${pct===100?" complete":""}">${done}/${total}</div>
+        <div class="mini-bar-track"><div class="mini-bar-fill${pct===100?" complete":""}" style="width:${pct}%"></div></div>`:""}
+      </div>
+    </button>`;
+  }
+  wdl.innerHTML=whtml;
+
+  // OVERVIEW
+  document.getElementById("ov-sub").textContent=`${overall.done} of ${overall.total} total tasks done`;
+  document.getElementById("ov-pct").textContent=overall.pct+"%";
+  document.getElementById("ov-bar").style.width=overall.pct+"%";
+  let scards="";
+  SUBJECT_ORDER.forEach(sub=>{
+    const meta=SUBJECT_META[sub];
+    let t=0,dn=0;
+    PLAN.forEach(d=>{ (d.subjectTasks[sub]||[]).forEach((task,i)=>{ t++; if(checked[`${d.dayNum}_${sub}_${i}`])dn++; }); });
+    const pct=t?Math.round((dn/t)*100):0;
+    scards+=`<div class="sub-card" style="background:${meta.bg}">
+      <div class="sub-card-row">
+        <span class="sub-card-name" style="color:${meta.color}">${sub}</span>
+        <span class="sub-card-count" style="color:${meta.color}">${dn}/${t}</span>
+      </div>
+      <div class="sub-bar-track"><div class="sub-bar-fill" style="background:${meta.color};width:${pct}%"></div></div>
+      <div class="sub-pct" style="color:${meta.color}">${pct}% complete</div>
+    </div>`;
+  });
+  document.getElementById("sub-cards").innerHTML=scards;
+}
+
+
+// ─── SYLLABUS RENDER ──────────────────────────────────────────────────────────
+const SUBJECT_ICONS = {
+  "English": "📖",
+  "Logical Reasoning": "🧩",
+  "Legal Reasoning": "⚖️",
+  "Quantitative Aptitude": "🔢",
+  "GK & Current Affairs": "🌍",
+};
+
+function renderSyllabus() {
+  const container = document.getElementById("syllabus-content");
+  if (!container) return;
+
+  if (!syllabusSubject) {
+    // Subject list view
+    let html = `<div class="syllabus-panel">
+      <div class="syllabus-title">Complete Syllabus</div>
+      <div class="syllabus-sub">Tap a subject to view & track its full syllabus</div>`;
+
+    ["English","Logical Reasoning","Legal Reasoning","Quantitative Aptitude"].forEach(sub => {
+      const meta = SUBJECT_META[sub];
+      const prog = getSyllSubjectProgress(sub);
+      const pct = prog.total ? Math.round((prog.done/prog.total)*100) : 0;
+      const icon = SUBJECT_ICONS[sub] || "📚";
+      html += `<div class="subject-card">
+        <button class="subject-card-header" onclick="syllabusSubject='${sub}';syllabusSearch='';render();">
+          <div class="subject-card-icon" style="background:${meta.bg}">${icon}</div>
+          <div class="subject-card-info">
+            <div class="subject-card-name" style="color:${meta.color}">${sub}</div>
+            <div class="subject-card-stats">${prog.done}/${prog.total} topics · ${pct}% done</div>
+          </div>
+          <span class="subject-card-arrow">›</span>
+        </button>
+        <div class="subject-mini-bar"><div class="subject-mini-bar-fill" style="background:${meta.color};width:${pct}%"></div></div>
+      </div>`;
+    });
+
+    // GK note
+    html += `<div class="subject-card">
+      <div class="subject-card-header" style="cursor:default">
+        <div class="subject-card-icon" style="background:${SUBJECT_META["GK & Current Affairs"].bg}">🌍</div>
+        <div class="subject-card-info">
+          <div class="subject-card-name" style="color:${SUBJECT_META["GK & Current Affairs"].color}">GK & Current Affairs</div>
+          <div class="subject-card-stats">Daily practice — tracked in Today tab</div>
+        </div>
+      </div>
+    </div>`;
+
+    html += `</div>`;
+    container.innerHTML = html;
+    return;
+  }
+
+  // Drill-down view for a subject
+  const sub = syllabusSubject;
+  const meta = SUBJECT_META[sub];
+  const seq = SYLLABUS_SEQ[sub] || [];
+  const prog = getSyllSubjectProgress(sub);
+  const pct = prog.total ? Math.round((prog.done/prog.total)*100) : 0;
+  const icon = SUBJECT_ICONS[sub] || "📚";
+
+  // Separate classes and books
+  const classes = seq.filter(t => t.type === "class");
+  const books = {};
+  seq.filter(t => t.type !== "class").forEach(t => {
+    const b = t.book || 0;
+    if (!books[b]) books[b] = [];
+    books[b].push(t);
+  });
+
+  const q = syllabusSearch.trim().toLowerCase();
+
+  let html = `<div style="padding-bottom:48px;">
+    <button class="syll-back" onclick="syllabusSubject=null;syllabusSearch='';render();">
+      <span class="syll-back-arrow">←</span>
+      <span class="syll-back-label">All Subjects</span>
+    </button>
+    <div class="syll-subject-header">
+      <div class="syll-subject-name" style="color:${meta.color}">${icon} ${sub}</div>
+      <div class="syll-subject-pct">${prog.done}/${prog.total} done · ${pct}%</div>
+      <div class="syll-progress-bar"><div class="syll-progress-fill" style="background:${meta.color};width:${pct}%"></div></div>
+    </div>
+    <div class="syll-search-wrap">
+      <span class="syll-search-icon">🔍</span>
+      <input class="syll-search-input" type="text" placeholder="Search topics in ${sub}…"
+        value="${syllabusSearch.replace(/"/g,'&quot;')}"
+        oninput="syllabusSearch=this.value;renderSyllabus();"
+        autocomplete="off"/>
+      ${syllabusSearch ? `<button class="syll-search-clear" onclick="syllabusSearch='';renderSyllabus();">✕</button>` : ''}
+    </div>`;
+
+  function matchQ(label) { return !q || label.toLowerCase().includes(q); }
+  let totalVisible = 0;
+
+  // Classes section
+  const filteredClasses = classes.filter(t => matchQ(t.label));
+  if (filteredClasses.length) {
+    html += `<div class="syll-section">
+      <div class="syll-section-title" style="color:${meta.color}">🎓 Classes to Cover (${filteredClasses.length}${q?" matching":""})</div>`;
+    filteredClasses.forEach(task => {
+      totalVisible++;
+      const idx = SYLL_TASK_LIST.indexOf(task);
+      const done = isSyllTaskChecked(task);
+      const keys = getSyllTaskCheckedKeys(task);
+      const dayTag = keys.length ? `Day ${keys[0].split("_")[0]}` : "Unscheduled";
+      html += syllTaskRowHTML(task, idx, done, meta, dayTag, q);
+    });
+    html += `</div>`;
+  }
+
+  // Books
+  Object.keys(books).sort((a,b)=>+a-+b).forEach(bookNum => {
+    const items = books[bookNum];
+    const filteredItems = items.filter(t => matchQ(t.label));
+    if (!filteredItems.length) return;
+    totalVisible += filteredItems.length;
+    html += `<div class="syll-section">
+      <div class="syll-section-title" style="color:${meta.color}">📖 Book ${bookNum} (${filteredItems.length}${q?" matching":""})</div>`;
+    filteredItems.forEach(task => {
+      const idx = SYLL_TASK_LIST.indexOf(task);
+      const done = isSyllTaskChecked(task);
+      const keys = getSyllTaskCheckedKeys(task);
+      const dayTag = keys.length ? `Day ${keys.map(k=>k.split("_")[0]).join(", ")}` : "Unscheduled";
+      html += syllTaskRowHTML(task, idx, done, meta, dayTag, q);
+    });
+    html += `</div>`;
+  });
+
+  if (q && totalVisible === 0) {
+    html += `<div class="syll-no-results">No topics match "<strong>${q.replace(/</g,"&lt;")}</strong>"</div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function syllTaskRowHTML(task, idx, done, meta, dayTag, q) {
+  let safeLabel = task.label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  if (q && q.length >= 2) {
+    const safeQ = q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    safeLabel = safeLabel.replace(new RegExp(`(${safeQ})`, "gi"), '<mark style="background:#ede0ff;color:#4a2d7a;border-radius:3px;padding:0 2px">$1</mark>');
+  }
+  const hexLight = meta.color + "44";
+  const hexBg = meta.color + "11";
+  const borderStyle = done ? `border-color:${hexLight};background:${hexBg};` : "";
+  const cbStyle = done ? `border-color:${meta.color};background:${meta.color};` : "border-color:#ccc;";
+  return `<button class="syll-task-row" style="${borderStyle}" onclick="toggleSyllTask('${idx}')">
+    <div class="syll-checkbox" style="${cbStyle}">${done ? "✓" : ""}</div>
+    <div style="flex:1">
+      <div class="syll-task-label${done?" syll-done":""}">${safeLabel}</div>
+      <div class="syll-task-daytag" style="color:${meta.color}88">${dayTag}</div>
+    </div>
+  </button>`;
+}
+
+function taskRowHTML(label,type,book,assignmentNum,isChecked,accentColor,key) {
+  const isClass=type==="class";
+  const isAssignment=type==="assignment";
+  const hexLight=accentColor+"44";
+  const hexBg=accentColor+"11";
+  let meta="";
+  if(isAssignment) meta=`<div class="task-meta" style="color:${accentColor}">📖 Book ${book} · Assignment ${assignmentNum}</div>`;
+  if(isClass) meta=`<div class="task-meta" style="color:${accentColor}">🎓 CLASS</div>`;
+  // Escape label for HTML
+  const safeLabel=label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  return `<button class="task-row${isChecked?" checked":""}" 
+    style="${isChecked?`border-color:${hexLight};background:${hexBg};`:""}"
+    onclick="toggleTask('${key}')">
+    <div class="task-checkbox${isChecked?" checked":""}" style="${isChecked?`border-color:${accentColor};background:${accentColor};`:`border-color:#ccc;`}">
+      ${isChecked?`<span>✓</span>`:""}
+    </div>
+    <div style="flex:1">
+      <div class="task-label${isClass?" class-label":""}${isChecked?" checked-label":""}">${safeLabel}</div>
+      ${meta}
+    </div>
+  </button>`;
+}
+
+function toggleTask(key) {
+  checked[key]=!checked[key];
+  saveChecked();
+  render();
+}
+
+function changeDay(delta) {
+  currentDay=Math.max(1,Math.min(TOTAL_DAYS,currentDay+delta));
+  render();
+}
+
+function switchTab(tab) {
+  activeTab=tab;
+  render();
+}
+
+// ─── SEARCH ───────────────────────────────────────────────────────────────────
+function openSearch() {
+  document.getElementById("search-overlay").classList.add("open");
+  setTimeout(()=>document.getElementById("search-input").focus(), 80);
+}
+function closeSearch() {
+  document.getElementById("search-overlay").classList.remove("open");
+  document.getElementById("search-input").value = "";
+  document.getElementById("search-results").innerHTML = `<div class="search-hint">Type a keyword to find which days a topic appears on.</div>`;
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById("search-overlay")) closeSearch();
+}
+
+function highlightMatch(text, query) {
+  if (!query) return text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const safe = text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  return safe.replace(new RegExp(`(${safeQ})`, "gi"), "<mark>$1</mark>");
+}
+
+function doSearch() {
+  const q = document.getElementById("search-input").value.trim().toLowerCase();
+  const container = document.getElementById("search-results");
+  if (!q || q.length < 2) {
+    container.innerHTML = `<div class="search-hint">Type a keyword to find which days a topic appears on.</div>`;
+    return;
+  }
+
+  const results = [];
+
+  PLAN.forEach(day => {
+    if (day.isFree) return;
+    // Check non-negotiables
+    day.nonNeg.forEach((task) => {
+      if (task.label.toLowerCase().includes(q)) {
+        results.push({ day, label: task.label, subject: "Daily Non-Negotiable", type: "daily", book: null });
+      }
+    });
+    // Check subject tasks
+    Object.entries(day.subjectTasks).forEach(([sub, tasks]) => {
+      tasks.forEach((task) => {
+        if (task.label.toLowerCase().includes(q)) {
+          results.push({ day, label: task.label, subject: sub, type: task.type || "other", book: task.book || null });
+        }
+      });
+    });
+  });
+
+  if (!results.length) {
+    container.innerHTML = `<div class="search-empty">No results for "<strong>${q.replace(/</g,"&lt;")}</strong>".<br><span style="font-size:12px">Try a shorter keyword, like "constitutional" or "torts".</span></div>`;
+    return;
+  }
+
+  const meta = SUBJECT_META;
+  let html = `<div class="search-count">${results.length} result${results.length===1?"":"s"} for "${q.replace(/</g,"&lt;")}"</div>`;
+
+  results.forEach(r => {
+    const m = meta[r.subject] || {color:"#555",bg:"#f0f0f0",short:r.subject.slice(0,3).toUpperCase()};
+    const phase = getPhase(r.day.dayNum);
+    const typeLabel = r.type === "class" ? "🎓 CLASS" : r.type === "assignment" ? `📖 Book ${r.book}` : r.type === "daily" ? "📌 Daily" : "📌";
+    html += `<div class="search-result-card" onclick="goToDay(${r.day.dayNum})">
+      <div class="src-top">
+        <span class="src-day-pill">Day ${r.day.dayNum}</span>
+        <span class="src-date">${r.day.label}</span>
+      </div>
+      <div class="src-phase">${phase}</div>
+      <div class="src-topic">${highlightMatch(r.label, q)}</div>
+      <div class="src-meta-row">
+        <span class="src-subject-badge" style="background:${m.bg};color:${m.color}">${m.short}</span>
+        <span class="src-type-tag">${typeLabel}</span>
+      </div>
+      <div class="src-goto">Tap to go to Day ${r.day.dayNum} →</div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function goToDay(dayNum) {
+  closeSearch();
+  currentDay = dayNum;
+  activeTab = "today";
+  render();
+  window.scrollTo(0, 0);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadChecked();
+render();
+</script>
+</body>
+</html>
