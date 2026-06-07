@@ -333,7 +333,6 @@ const SUBJECT_ORDER = ["English","Logical Reasoning","Legal Reasoning","Quantita
 const DAILY_NON_NEG = [
   "📰 Read 1 article (English)",
   "📚 Revise vocabulary (1800-word list)",
-  "📖 Continue novel reading",
   "⚖️ Read 1 legal article",
   "🗞️ Read newspaper (GK)",
   "✅ Solve 10 GK Today MCQs",
@@ -697,7 +696,7 @@ function buildPlan() {
     const wd = getWeekday(d);
     const label = getDayLabel(d);
     const week = Math.ceil(d/7);
-    if (wd===0) { days.push({dayNum:d,label,week,weekday:"Sun",nonNeg:[],subjectTasks:{},isFree:true,isSat:false}); continue; }
+    if (wd===0) { days.push({dayNum:d,label,week,weekday:"Sun",nonNeg:DAILY_NON_NEG.map(l=>({label:l})),subjectTasks:{},isFree:false,isSat:false,isSun:true}); continue; }
     if (wd===6) { days.push({dayNum:d,label,week,weekday:"Sat",nonNeg:DAILY_NON_NEG.map(l=>({label:l})),subjectTasks:{},isFree:false,isSat:true}); continue; }
     const nonNeg = DAILY_NON_NEG.map(l=>({label:l}));
     const gkTasks = [
@@ -813,6 +812,7 @@ function saveChecked() {
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function countDayTasks(d) {
   if(!d||d.isFree) return {total:0,done:0};
+  if(d.isSun) { let t=d.nonNeg.length,dn=0; d.nonNeg.forEach((_,i)=>{ if(checked[`${d.dayNum}_nn_${i}`]) dn++; }); return {total:t,done:dn}; }
   let total=d.nonNeg.length, done=0;
   d.nonNeg.forEach((_,i)=>{ if(checked[`${d.dayNum}_nn_${i}`]) done++; });
   Object.entries(d.subjectTasks).forEach(([sub,tasks])=>{
@@ -870,7 +870,7 @@ function render() {
   // TODAY CONTENT
   const tc = document.getElementById("today-content");
   if(day?.isFree){
-    tc.innerHTML=`<div class="free-day"><div class="emoji">🌿</div><h2>Sunday — Rest Day</h2><p>Recharge. You've earned it.</p></div>`;
+    tc.innerHTML=`<div class="free-day"><div class="emoji">🌿</div><h2>Rest Day</h2><p>Recharge. You've earned it.</p></div>`;
   } else {
     let html = "";
     // progress bar
@@ -882,6 +882,7 @@ function render() {
       <div class="day-progress-track"><div class="day-progress-fill${dayPct===100?' complete':''}" style="width:${dayPct}%"></div></div>
     </div>`;
     if(day?.isSat) html+=`<p class="sat-note">Saturday — Daily Non-Negotiables Only</p>`;
+    if(day?.isSun) html+=`<p class="sat-note" style="color:#27ae60">Sunday — Daily Non-Negotiables Only</p>`;
 
     // Daily non-negotiables section
     html+=`<div class="section">
@@ -893,8 +894,17 @@ function render() {
     });
     html+=`</div>`;
 
+    // Rest message on weekends
+    if(day?.isSat || day?.isSun){
+      html+=`<div style="margin:8px 20px 28px;padding:18px 20px;background:linear-gradient(135deg,#f3ffe8,#e8f5e9);border-radius:16px;border:1.5px solid #c8e6c9;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">${day.isSun ? "🌻" : "🌿"}</div>
+        <div style="font-size:14px;font-weight:700;color:#2e7d32;margin-bottom:4px;">Give yourself a break — you've earned it.</div>
+        <div style="font-size:12px;color:#558b2f;">Rest, recharge, and come back stronger tomorrow.</div>
+      </div>`;
+    }
+
     // Subject sections (weekdays only)
-    if(!day.isSat){
+    if(!day.isSat && !day.isSun){
       SUBJECT_ORDER.forEach(sub=>{
         const tasks=day.subjectTasks[sub];
         if(!tasks||!tasks.length) return;
@@ -933,7 +943,7 @@ function render() {
       <div>
         <span class="week-day-name">Day ${d.dayNum}</span>
         <span class="week-day-date">${d.label}</span>
-        ${d.isFree?`<span class="week-day-badge" style="color:#27ae60">🌿 Rest</span>`:""}
+        ${d.isFree?`<span class="week-day-badge" style="color:#27ae60">🌿 Rest</span>`:d.isSun?`<span class="week-day-badge" style="color:#27ae60">🌻 Daily only</span>`:""}
         ${d.isSat?`<span class="week-day-badge" style="color:#e67e22">Daily only</span>`:""}
       </div>
       <div>${!d.isFree?`<div class="week-day-count${pct===100?" complete":""}">${done}/${total}</div>
